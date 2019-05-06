@@ -76,7 +76,7 @@ To conclude this short view on the fishery-dependent data, the increasing of the
 
 The construction principle of fishery-dependent data containers is illustrated using the Fishframe data format (see Fig. 1 from Jansen et al. 2016). 
 
-![Fishframe data format](./fishframe2.png)
+![Fishframe data format](fishframe2.png)
 
 \newpage
 
@@ -254,12 +254,22 @@ library(sf)
 plot(defspace["type"])
 ```
 
+The contruction of a simple `Space` object containing three spatial objects (one
+ICES division, one GSA area and a harbour) is:
+
 ```{r space5,eval=T}
 tripgeo<-new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB"),
 		  SpaceType=c("ICESdiv","GSA","harbour"))
-try(plot(tripgeo),silent=T)
-
+print(tripgeo)
 ```
+The `plot` method attached to the `Space` class map the geometry of the
+resulting object:
+
+```{r space6,eval=T}
+plot(tripgeo)
+```
+
+
 
 
 ### Vessel
