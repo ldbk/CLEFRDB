@@ -99,11 +99,24 @@ The S4 objects in R have fundamental properties related to the fishery data cont
 ## Information
 The data container has to record information at its smallest resolution. If a trip is located in space by the vessel trajectory, the data container will contain this trajectory. If for another trip, only the ICES division is known, then this information is recorded in the data container. This consideration is the same for the time, and for all the other fishery information: one record by parameters at the smallest resolution possible. The R classes and objects will then ensure the translation of the data into the data-calls requirements using methods and transparent reference lists and algorithms. 
 
+## An operational example
+
+A data-call asks for the monthly total landings for all the fishing areas where vessels operate.
+To answer this data-call, the creation of an object `Landing` containing (1) the landings values, (2) the corresponding dates (in this case the months) and (3) areas where fishing occurs.
+The object `Landing` contains three entities:
+
+- (1) the numerical values of the information requested,
+- (2) a `Time` object,
+- (3) a `Spatial` object.
+
+The objects (2) and (3) refer only to the time and the spatial characteristics of the landing events. They are built independently, and their conformity checked during the building process. The same construction principles apply for the object (1): in this simple example, this object is a positive numerical vector. To build the final `Landing` object, the objects (1), (2) and (3) are associated together, in a way they keep their internal validations mechanisms. The `Landing` object inherits the conformity checks and the objects types from which it was built. In the R language, the definition of the objects, their validities and their inheritance are based on the class definition, here the S4 classes. 
+
 
 \newpage
 
 # The elementary classes
-The classes identified as elementary are presented in the next section. They are implemented in the present package, but their implementation is subject to change according to the user needs and the data-calls scopes. We believe that the `Time` and the `Space` classes are generic enough to be needed across every data calls. 
+
+The classes identified as elementary are presented in the next section. They are implemented in the present package, but their implementations are subject to change according to the user needs and the data-calls scopes. We believe that the `Time` and the `Space` classes are generic enough to be needed across every data calls. 
 
 The library is then loaded:
 
@@ -250,26 +263,35 @@ head(defspace)
 A plot of this object shows a map of all the geometry available.
 
 ```{r space4}
-library(sf)
-plot(defspace["type"])
+plot(defspace[1:10,"type"],axes=T)
 ```
 
-The contruction of a simple `Space` object containing three spatial objects (one
-ICES division, one GSA area and a harbour) is:
+The contruction of a simple `Space` object containing nine spatial objects (three
+ICES divisions, three ICES rectangles, two GSA areas and a harbour) is:
 
 ```{r space5,eval=T}
-tripgeo<-new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB"),
-		  SpaceType=c("ICESdiv","GSA","harbour"))
+tripgeo<-new("Space",SpacePlace=c("27.7.f","27.7.g","27.7.h",
+				  "27E8","27F0","28F0",
+				  "GSA07","GSA08",
+				  "FRRTB"),
+		  SpaceType=c("ICESdiv","ICESdiv","ICESdiv",
+			      "ICESrect","ICESrect","ICESrect",
+			      "GSA","GSA",
+			      "harbour"))
 print(tripgeo)
 ```
 The `plot` method attached to the `Space` class map the geometry of the
 resulting object:
 
 ```{r space6,eval=T}
-plot(tripgeo)
+plot(tripgeo,axes=T)
 ```
 
+Validation mechanisms are operating. The following commands will return an error.
 
+```{r space7,eval=F}
+plot(tripgeo,axes=T)
+```
 
 
 ### Vessel

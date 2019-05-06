@@ -52,8 +52,8 @@ setMethod("plot","Space",
 			spacex<-defspace[defspace$type%in%typex,]
 		  #print(spacex)
 			spacex<-defspace[defspace$id%in%placex,]
-		  print(spacex)
-		  print(str(spacex))
+		  #print(spacex)
+		  #print(str(spacex))
 		        plot(spacex["label"],...)
 			  		  #nomslot<-methods::slotNames(object)
 			  		  #plot(x=x@TimeDate,y=rep(0,length(x@TimeDate)),xlab="TimeDate",ylab="",...)#,y=x@TimeType)
