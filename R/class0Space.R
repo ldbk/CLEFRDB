@@ -41,6 +41,25 @@ setClass(Class="Space",
 	validity=validSpace
 	)
 
+
+
+#define the methods
+#' @export
+setMethod("plot","Space",
+	  	  function(x,y,...){
+			  typex<-x@SpaceType
+			  placex<-x@SpacePlace
+			spacex<-defspace[defspace$type%in%typex,]
+		  #print(spacex)
+			spacex<-defspace[defspace$id%in%placex,]
+		  print(spacex)
+		  print(str(spacex))
+		        plot(spacex["label"],...)
+			  		  #nomslot<-methods::slotNames(object)
+			  		  #plot(x=x@TimeDate,y=rep(0,length(x@TimeDate)),xlab="TimeDate",ylab="",...)#,y=x@TimeType)
+		  	  }
+		  	  )
+
 if(F){
 library(CLEFRDB)
 new("Space")
@@ -49,4 +68,16 @@ new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB"),SpaceType=c("ICESdiv","GSA","
 new("Space",SpacePlace=c("27.7.h","GSA07"),SpaceType=c("ICESdiv","GSA"))
 new("Space",SpacePlace=c("27.7.h","GSA078"),SpaceType=c("ICESdiv","GSA"))
 new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB","DEBRB"),SpaceType=c("ICESdiv","GSA","harbour"))
+library(CLEFRDB)
+aa<-new("Space",SpacePlace="27.7.h",SpaceType="ICESdiv")
+plot(aa)
+
+aa<-new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB"),SpaceType=c("ICESdiv","GSA","harbour"))
+plot(bb)
+#aa<-merge(data.frame(type=aa@SpaceType,id=aa@SpacePlace),defspace)#,by.x="SpaceType",by.y="type")
+pipo<-defspace[defspace$type%in%aa@SpaceType & defspace$id%in%aa@SpacePlace,]
+pipo<-defspace[defspace$id%in%aa@SpacePlace,]
+plot(pipo)
+
+
 }

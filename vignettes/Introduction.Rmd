@@ -136,8 +136,8 @@ new("Time",TimeType="date",TimeDate=hauldate)
 
 Why adding such complex definition of a temporal event when adding column for year, month, day or quarter could be more straightforward ? For two reasons:
 
-- first, having a `POSIXct` object guarantees the conformity of the date, and gives to the user the possibility to extract time informaiton using R methods without any error,
-- second, this object carries all the redondant information sometimes requested by the data-calls.
+- having a `POSIXct` object guarantees the conformity of the date, and gives to the user the possibility to extract time informaiton using R methods without any error,
+- this object carries all the redondant information sometimes requested by the data-calls.
 
 To illustrate these properties, let see a simple example with a set of four differents temporal events recorded at different time scales:
 ```{r time4}
@@ -158,7 +158,7 @@ If a data-call request date in year, the conversion is easy to compute:
 ```{r time5}
 substr(haultime@TimeDate,1,4)
 ```
-More complex time manipulation are available using the `lubridate` R package.
+More complex time manipulations are available using the `lubridate` R package.
 
 ### Data quality
 
@@ -223,7 +223,45 @@ new("Landings")
 initinherit(new("Landings"),landings=w,Time=haultime)
 ```
 
-### Space
+## Space
+
+The `Space` class follow the same class structure of the `Time` class.
+Spatial references are defined by a type (`SpaceType`) and a place
+(`SpatialPlace`).
+```{r space1}
+new("Space")
+```
+The type provides the spatial type at which the information is recorded,
+and the place the name of the spatial area corresponding to the type
+Both paramters are `character` vector
+Four `SpaceType` are available:
+```{r space2}
+print(Spacetype)
+```
+corresponding respectively to the ICES division (e.g. 27.7.g), the ICES rectangle
+(e.g. 50H6), the harbour in UNLOCODE (e.g. DEBRB) and the GSA area (e.g. GSA07).
+The object `defspace` of class `sf` gives the spatial geometry of these differents spatial
+entities using simple features ISO standard definition.
+
+```{r space3}
+head(defspace)
+```
+
+A plot of this object shows a map of all the geometry available.
+
+```{r space4}
+library(sf)
+plot(defspace["type"])
+```
+
+```{r space5,eval=T}
+tripgeo<-new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB"),
+		  SpaceType=c("ICESdiv","GSA","harbour"))
+try(plot(tripgeo),silent=T)
+
+```
+
+
 ### Vessel
 ### Haul
 ### Species
