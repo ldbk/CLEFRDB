@@ -1,4 +1,6 @@
 # CLEFRDB R package
 
-devtools::install_github("https://github.com/ldbk/CLEFRDB",build_vignettes = TRUE)
 
+To install it please do:
+
+remotes::install_github("https://github.com/ldbk/CLEFRDB", build_opts = c("--no-resave-data", "--no-manual"))
