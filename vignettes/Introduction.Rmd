@@ -356,6 +356,8 @@ To implement this new conformity check, a validity function can
 be define and associated to the `Landings` cass. 
 This function checks for an equal number of objects in each class,
 and test if the landings are positive values.
+For a more advanced discussion on how to define this validation mechanism, see the R's help about the 
+`setValidity` method.
 
 ```{r space9,eval=T}
 #validity of the landings object
@@ -388,11 +390,207 @@ To complete the information needed in this table, the class `Space` and `Time`
 will be used to provide the harbour and the year, while the `Vessel` and 
 `Sampling` classes are built from scratch to provide the requested information.
 
+### A `Vessel` class
+
+The `Vessel` class contains all the information related to the vessel. In the six slots
+of this class, the vessel identifier, its flag, type, length, power and size are recorded.
+To lighten this example, the conformity of the object will be not adressed here. Only the type
+of the slot (character, integer, numeric...) are checked. To validate the conformity of the object, the previous example shows how to define a validation function and to associate it to the object.
+The information of a fictional vessel populate this new object.
+
+```{r fishframe1}
+#Vessel class
+setClass(Class="Vessel",
+        slots=c(VesselId="character",
+                VesselFlag="character",
+                VesselType="character",
+                VesselLength="integer",
+                VesselPower="integer",
+                VesselSize="integer"
+                ),
+        prototype=prototype(VesselId=character(),
+                            VesselFlag=character(),
+                            VesselType=character(),
+                            VesselLength=integer(),
+                            VesselPower=integer(),
+                            VesselSize=integer()),
+        )
+#a fictional vessel
+myVessel<-new("Vessel", 
+	      VesselId="AAAA123",
+	      VesselFlag="FRA",
+              VesselType=c("Trawler"),
+	      VesselLength=as.integer(20),
+	      VesselPower=as.integer(5000),
+              VesselSize=as.integer(1000))
+```
+
+A new class `Sampling` is defined following the same approach.
+```{r fishframe2}
+#Sampling class"
+setClass(Class="Sampling",
+	 slots=c(SamplingId="character",
+		 SamplingType="character",
+		 SamplingMethod="character",
+		 SamplingProject="character",
+		 SamplingCountry="character"),
+	 prototype=prototype(SamplingId=character(),
+			     SamplingType=character(),
+			     SamplingMethod=character(),
+			     SamplingProject=character(),
+			     SamplingCountry=character())
+	 )
+
+#a fictionnal sample
+mySampling<-new("Sampling",
+		SamplingId="SAMP2199",
+		SamplingType="S",
+		SamplingMethod="Observer",
+		SamplingProject="SamplingProjectFRA",
+		SamplingCountry="FRA")
+```
+To complete the trip information, two `Time` and wto `Spatial` objects are defined
+for this trip. They refer to the location and the date of the beginning and the
+end of fishing trip:
+```{r fishframe3}
+mySpaceDep<-new("Space",SpacePlace=c("FRCOC"),SpaceType=c("harbour"))
+mySpaceArr<-new("Space",SpacePlace=c("FRCOC"),SpaceType=c("harbour"))
+myTimeDep<-new("Time",
+	    TimeDate=as.POSIXct(strptime("2011-03-15 12:16:00","%Y-%m-%d %H:%M:%S")),
+	    TimeType="date")
+myTimeArr<-new("Time",
+	    TimeDate=as.POSIXct(strptime("2011-03-19 04:00:32","%Y-%m-%d %H:%M:%S")),
+	    TimeType="date")
+```
+Then, a new class corresponding to the Trip table is defined:
+```{r fishframe4}
+# a new Trip class
+setClass(Class="Trip",
+        slots=c(nbhaul="integer",
+                daysatsea="integer",
+		TripId="character",
+		TimeDep="Time",
+		TimeArr="Time",
+		SpaceDep="Space",
+		SpaceArr="Space"
+                ),
+        contains=c("Vessel",
+                "Sampling"
+                ),
+         prototype=prototype(TripId=character(),
+			     nbhaul=integer(),
+                             daysatsea=integer(),
+                             Vessel=new("Vessel"),
+                             Sampling=new("Sampling"),
+                             TimeDep=new("Time"),
+                             TimeArr=new("Time"),
+                             SpaceDep=new("Space"),
+                             SpaceArr=new("Space")
+                             )
+)
+
+myTrip<-initinherit(new("Trip",
+			TripId="FR872",
+			nbhaul=as.integer(12),
+			daysatsea=as.integer(5)),
+		    Sampling=mySampling,
+		    Vessel=myVessel,
+		    TimeDep=myTimeDep,
+		    TimeArr=myTimeArr,
+		    SpaceDep=mySpaceDep,
+		    SpaceArr=mySpaceArr)
+
+```
+Then, the export this object into the `Trip` format requested by Fishframe
+is only a matter of formatting (we suppose that all the field were
+checked for conformity, with the right validation function associated to each
+object). Here an example of such formatting:
+```{r fishframe5}
+FishframeTrip<-data.frame(`Record type`="TR",
+			  `Sampling type`=myTrip@SamplingType,
+			  `Landing country`=myTrip@SamplingCountry,
+			  `Vessel flag country`=myTrip@VesselFlag,
+			  `Year`=substr(myTrip@TimeArr@TimeDate,1,4),
+			  `Project`=myTrip@SamplingProject,
+			  `Trip code`=myTrip@TripId,
+			  `Vessel length`=myTrip@VesselLength,
+			  `Vessel power`=myTrip@VesselPower,
+			  `Vessel size`=myTrip@VesselSize,
+			  `Vessel type`=myTrip@VesselType,
+			  `Harbour`=myTrip@SpaceArr@SpacePlace,
+			  `Number of hauls`=myTrip@nbhaul,
+			  `Days at sea`=myTrip@daysatsea,
+			  `Vessel identifier`=myTrip@VesselId,
+			  `Sampling country`=myTrip@SamplingCountry,
+			  `Sampling method`=myTrip@SamplingMethod)
+
+```
+
 ## The table `Fishing Trip` in the RDBES
-### Vessel
-### Haul
-### Species
-### Sampling
+
+According to the `Trip` object, the formatting for the `Fishing Trip` table of
+the RDBES is done using the same information. Some parameters are not available
+in the original `Trip` object, but they can be added by the user according to
+its needs. For example the probability of sampling can be added to the `Sampling` object
+in order to complete the information requested by the RDBES.
+The export with the original `Trip` object to the RDBES format is:
+
+
+```{r rdbes1}
+RDBESTrip<-data.frame(`FishingTripID`=myTrip@SamplingId,
+		`OnShoreEventID`="",
+		`VesselSelectionID `="",
+		`VesselDetailsID `=myTrip@VesselId,
+		`SampleDetailsId`=myTrip@SamplingId,
+		`Record type`="FT",
+		`National Fishing trip Code`=myTrip@TripId,
+		`Stratification`="",
+		`Trip Stratum`="",
+		`FishingTripsClustering`="",
+		`FishingTripsClusterName`="",
+		`Sampler`="",
+		`NumberOfHauls`=myTrip@nbhaul,
+		`Departure location`=myTrip@SpaceDep@SpacePlace,
+		`Depature date`=substr(myTrip@TimeDep@TimeDate,1,10),
+		`Depature time`=substr(myTrip@TimeDep@TimeDate,12,19),
+		`Arrival location`=myTrip@SpaceArr@SpacePlace,
+		`Arrival date`=substr(myTrip@TimeArr@TimeDate,1,10),
+		`Arrival time`=substr(myTrip@TimeArr@TimeDate,12,19),
+		`FishingTrips Total`="",
+		`FishingTrips Sampled`=1,
+		`FishingTripSampelProbability`="",
+		`Selection method`="",
+		`Selection Method Cluster`="",
+		`FishingTripsTotClusters`="",
+		`FishingTripsSampClusters`="",
+		`FishingTripsClustersProb`="")
+```
+
+# Conclusion and future work
+
+s R library proposes an implementation of classes of objects currently used by
+fishery-dependent data. The definition of S4 classes and its strict validation
+mechanism lead to generating objects which strictly follow the conformity of
+their description (variable type, numerical range, compliance to a lookup
+table...). The inheritance among S4 objects gives to the user the ability to
+build more complex objects from smaller objects, conservating the conformity of
+these smaller objects. These objects have no prerequisite in term of format:
+they can be created from the national data available in each country. Then
+exporting these objects into the multiple formats requested by the different
+RFMOs is straightforward, and these objects, by construction, will pass the
+conformity checks implemented on the various upload facilities. 
+
+If the two examples presented in this document generate raw sampling dataset,
+other data-call request elevated data at the population level (GFCM, ICCAT, ICES
+Intercatch). So there is a strong need for methods associated with these object
+to raise the sampling data to the population level. Future work will implement
+such methods including generic statistical sound sampling elevation methods,
+from ratio-estimators to 
+probability-based sampling estimators. The main difficulty will be to free the
+elevation methods from any data format. A significant benefit should be the
+smooth transmission and adaptation of these methods to the RDBES format, and
+possibly to other fishery-dependent data formats. 
+
 
 \newpage
 
