@@ -43,10 +43,13 @@ setClass(Class="Space",
 
 
 
+#' generic map
+#' @export
+setGeneric("map", function(x,...) standardGeneric("map"))
 #define the methods
 #' @export
-setMethod("plot","Space",
-	  	  function(x,y,...){
+setMethod("map","Space",
+	  	  function(x,...){
 			  typex<-x@SpaceType
 			  placex<-x@SpacePlace
 			spacex<-defspace[defspace$type%in%typex,]
@@ -70,10 +73,10 @@ new("Space",SpacePlace=c("27.7.h","GSA078"),SpaceType=c("ICESdiv","GSA"))
 new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB","DEBRB"),SpaceType=c("ICESdiv","GSA","harbour"))
 library(CLEFRDB)
 aa<-new("Space",SpacePlace="27.7.h",SpaceType="ICESdiv")
+map(aa)
 plot(aa)
 
 aa<-new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB"),SpaceType=c("ICESdiv","GSA","harbour"))
-plot(bb)
 #aa<-merge(data.frame(type=aa@SpaceType,id=aa@SpacePlace),defspace)#,by.x="SpaceType",by.y="type")
 pipo<-defspace[defspace$type%in%aa@SpaceType & defspace$id%in%aa@SpacePlace,]
 pipo<-defspace[defspace$id%in%aa@SpacePlace,]

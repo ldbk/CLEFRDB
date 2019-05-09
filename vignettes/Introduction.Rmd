@@ -284,14 +284,72 @@ The `plot` method attached to the `Space` class map the geometry of the
 resulting object:
 
 ```{r space6,eval=T}
-plot(tripgeo,axes=T)
+map(tripgeo,axes=T)
 ```
 
-Validation mechanisms are operating. The following commands will return an error.
+Validation mechanisms are operating on the `SpacePlace` and `SpaceType` slots. 
+The following commands will return an error.
 
 ```{r space7,eval=F}
-plot(tripgeo,axes=T)
+new("Space",SpacePlace=c("27.7.h","GSA078"),
+    		SpaceType=c("ICEdiv","GSA"))
+new("Space",SpacePlace=c("27.7.h","GSA07","FRRTB","DEBRB"),
+    		SpaceType=c("ICESdiv","GSA","harbour"))
+
 ```
+
+### An example
+
+To illustrate the `Space` class use in an operational example, the previous
+example is extended. The data-call demands now the landings located in time and
+space. To define the new object, as previously, a `Time` object is build related
+to the date at which the four hauls were made, and a `Space` object referencing
+the areas where the hauls occur is added. Then the new object is defined as a
+new S4 class containing the landings values (the `landings` slot), the date of
+the hauls (the `Time` slot) and their positions (the `Space` slot). The values
+of the `haultime` and `haulspace` are copied in the new `Landings` object using
+the initinherit function. There is no need to check the conformity of the
+`haultime` and `haulspace` objects; this property was checked during the
+construction.
+
+```{r space8,eval=T}
+#a Time object related to four hauls
+        haultime<-c("2011-03-27 01:30:03",
+		    "2011-03-27 12:00:00",
+		    "2011-03-15 12:00:00",
+		    "2011-02-14 00:00:00")
+        haultime<-as.POSIXct(strptime(haultime,
+				      "%Y-%m-%d %H:%M:%S"))
+        haultime<-new("Time",TimeType=c("date","day","month","quarter"),
+                          TimeDate=haultime)
+# the value of the total landings of the four hauls
+w<-c(10000,3000,2000,10)
+#the area where the hauls were located
+haulspace<-new("Space",SpacePlace=c("27.7.f","27.7.g",
+				  "27E8","GSA07"),
+		  SpaceType=c("ICESdiv","ICESdiv",
+			      "ICESrect","GSA"))
+#Definition of the Landings class
+setClass(Class="Landings",
+         slots=c("landings"="numeric"),
+         contains=c("Time","Space"),
+         prototype=prototype(Landings=numeric(),
+                             Time=new("Time"),
+                             Space=new("Space"))
+         )
+#a new Landings object
+new("Landings")
+
+#a new Landings object initialized with the previous values
+haullanding<-initinherit(new("Landings"),landings=w,Time=haultime,Space=haulspace)
+print(haullanding)
+map(haullanding)
+```
+
+Regarding the conformity checks of the landings object, there are two issues. 
+First the new `landings` slots is not validated during the object initilization,
+and there is no assessement of the number of objects in each slots: they should
+have the same size.
 
 
 ### Vessel
