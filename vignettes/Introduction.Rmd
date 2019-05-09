@@ -333,7 +333,7 @@ haulspace<-new("Space",SpacePlace=c("27.7.f","27.7.g",
 setClass(Class="Landings",
          slots=c("landings"="numeric"),
          contains=c("Time","Space"),
-         prototype=prototype(Landings=numeric(),
+         prototype=prototype(landings=numeric(),
                              Time=new("Time"),
                              Space=new("Space"))
          )
@@ -341,17 +341,54 @@ setClass(Class="Landings",
 new("Landings")
 
 #a new Landings object initialized with the previous values
-haullanding<-initinherit(new("Landings"),landings=w,Time=haultime,Space=haulspace)
+haullanding<-initinherit(new("Landings",landings=w),Time=haultime,Space=haulspace)
 print(haullanding)
 map(haullanding)
+#dimclass(haullanding)
 ```
 
-Regarding the conformity checks of the landings object, there are two issues. 
-First the new `landings` slots is not validated during the object initilization,
-and there is no assessement of the number of objects in each slots: they should
-have the same size.
+Regarding the conformity checks of the `Landings` object, one issue remains.
+The `initinherit` function checks if the numbers of objects in each class are the
+same, and the conformity of the `Time` and `Space` objects was checked during
+their constructions, but the condition of having only positive values in the landing slot
+is not test.
+To implement this new conformity check, a validity function can
+be define and associated to the `Landings` cass. 
+This function checks for an equal number of objects in each class,
+and test if the landings are positive values.
 
+```{r space9,eval=T}
+#validity of the landings object
+validLandings<-function(object){
+	if(any(object@landings<0)){print("negative landings !!");FALSE}else{TRUE}
+}
+#associate the validation function to the landings object
+setValidity("Landings",validLandings)
+#the original object is still valid
+initinherit(new("Landings"),landings=w,Time=haultime,Space=haulspace)
+#a negative value in the landings slot will throw an error
+## w<-c(10000,3000,-2000,10)
+## initinherit(new("Landings",landings=w),Time=haultime,Space=haulspace)
+```
 
+# Application
+
+In this section, two examples are provided. The first example show how to
+generate object from the one available in this package, and some new objects to
+generate the table `TR` in the Fishframe format (ICES, 2018b). The second example will use
+these objects to generate the `Fishing Trip` table of the new RDBES format
+(ICES, 2019).
+
+## The table `Trip` in Fishframe
+
+This table contains information regarding the fishing trip (identifier of the
+trip, number of hauls, days at sea, harbour of landing), the vessel (identifier, flag, length, power, size, type), and the 
+sampling (type, year, method, sampling country, project name).
+To complete the information needed in this table, the class `Space` and `Time`
+will be used to provide the harbour and the year, while the `Vessel` and 
+`Sampling` classes are built from scratch to provide the requested information.
+
+## The table `Fishing Trip` in the RDBES
 ### Vessel
 ### Haul
 ### Species
@@ -368,6 +405,9 @@ have the same size.
 - ICES (International Council for the Exploration of the Seas), 2018c. 
 InterCatch Exchange Format. Version 1.0. Document version 1.11. http://www.ices.dk/marine-data/data-portals/Pages/InterCatch.aspx
 - Jansen, T., Degel, H., Vigneau, J. and Jardim, E. (2016) The Regional DataBase (RDB) Exchange Format. ICES Technical Report.
+- Jansen, T., Degel, H., Vigneau, J. and Jardim, E. (2016) The Regional DataBase (RDB) Exchange Format. ICES Technical Report.
+- ICES (International Council for the Exploration of the Seas), 2019. The public
+  repository of the RDBES development, https://github.com/ices-tools-dev/RDBES/ accessed the 01/05/2019.
 - JRC (Joint Research Center, European Commission, DG Maritime Affairs and Fisheries), 2019. https://datacollection.jrc.ec.europa.eu/dc/fdi
 - Wang, Richard Y.  and Strong, Diane M., 1996. What data quality means to data consumers? Journal of Management Information Systems, Vol. 12, No. 4 (Spring, 1996), pp. 5-33.
 - Wickham H. (2014) Advanced R. Chapman & Hall/CRC the R Series, 478 p. http://adv-r.had.co.nz/
